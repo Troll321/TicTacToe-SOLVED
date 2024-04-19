@@ -8,7 +8,6 @@ const state = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
 let gerakKe = 1, isGameOver = false;
 
 // initialize
-console.log(whatToMove[state]);
 for (let i = 0; i < col.length; i++) {
     col[i].addEventListener("click", ()=>{
         gerak(Math.floor(i/3), i%3);
@@ -47,18 +46,20 @@ function gameOver(playerindex) {
             alert("DRAW!");
         }, 0);
     } else {
-        setTimeout(()=>{alert(playerindex>0?"X":"O" + " WIN")}, 0);
+        setTimeout(()=>{alert((playerindex>0?"X":"O") + " WIN")}, 0);
     }
 }
 
+console.log(whatToMove[state] !== undefined ? whatToMove[state] : `${(((gerakKe+1)%2)*-2)+1} LOSE`);
 function gerak(row, col) {
     state[row][col] = (((gerakKe+1)%2)*-2)+1;
     render();
     check();
     if(!isGameOver && gerakKe == 9) {gameOver(0); return ;}
-    console.log(whatToMove[state]);
     gerakKe++;
     yanggerak.innerText = gerakKe%2?"X":"O";
+    console.log(whatToMove[state] !== undefined ? whatToMove[state] : `${(((gerakKe+1)%2)*-2)+1} LOSE`);
+
 }
 
 function check() {

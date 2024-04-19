@@ -1,13 +1,7 @@
 const state = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
 const whatToMove = {};
-const MAX = 10;
-
-let cnt = 1;
-function print(val, jum) {
-    if(cnt > jum) {return ;}
-    console.log(val);
-    cnt++;
-}
+const verdict = {};
+const MAX = 100;
 
 function check() {
     let isGameOver = false;
@@ -58,59 +52,60 @@ function check() {
     return 0;
 }
 
-function solve(gerakKe, row, col) {
-    const now = gerakKe%2?1:-1;
-    state[row][col] = now;
-
-    if(gerakKe == 9) {
-        let hasil = check();
-        state[row][col] = 0;
-        return hasil;
-    }
-    else if(check() != 0) {
-        print("OWE", 100);
-        let hasil = check();
-        state[row][col] = 0;
-        return hasil;
-    }
-
-    let out = now>0?MAX:-MAX;
-    
+function hitungGerakan() {
+    let out = 0;
     for (let i = 0; i < state.length; i++) {
         for (let j = 0; j < state.length; j++) {
-            if(state[i][j] != 0) {continue ;}
-            if(now > 0) {
-                let hasil = solve(gerakKe+1, i, j);        
-                if(hasil < out) {
-                    out = hasil;
-                    whatToMove[state] = {i, j};
-                }
-            } else {
-                let hasil = solve(gerakKe+1, i, j);
-                if(hasil > out) {
-                    out = hasil;
-                    whatToMove[state] = {i, j};
-                }
-            }
+            if(state[i][j] !== 0) {out++;}
         }
     }
-
-    if(out == -now) {whatToMove[state] = undefined;}
-    state[row][col] = 0;
     return out;
 }
 
-let ans = -MAX;
-for (let i = 0; i < state.length; i++) {
-    for (let j = 0; j < state.length; j++) {
-        let hasil = solve(1, i, j);
-        if(hasil > ans) {
-            ans = hasil;
-            whatToMove[state] = {i, j};
-        }
+function copyarr() {
+    const outarr = [[0,0,0],[0,0,0],[0,0,0]];
+    for (let i = 0; i < state.length; i++) {
+        for (let j = 0; j < state.length; j++) {
+            outarr[i][j] = state[i][j];            
+        }        
     }
+    return outarr;
 }
 
-console.log(Object.keys(whatToMove).length);
-console.log(ans);
+function solve() {
+    if(verdict[state] !== undefined) {return;}
+    const tmp = check();
+    if(tmp !== 0 || hitungGerakan() === 9) {verdict[state] = tmp; return ;}
+
+    const now = (hitungGerakan()%2)?-1:1;
+    let out = (now>0)?-MAX:MAX;
+    
+    const oldstate = copyarr();
+    for (let i = 0; i < state.length; i++) {
+        for (let j = 0; j < state.length; j++) {
+            if(state[i][j] !== 0) {continue ;}
+            state[i][j] = now;
+            if(now > 0) {
+                solve();        
+                if(verdict[state] > out) {
+                    out = verdict[state];
+                    whatToMove[oldstate] = [i, j];
+                }
+            } else {
+                solve();
+                if(verdict[state] < out) {
+                    out = verdict[state];
+                    whatToMove[oldstate] = [i, j];
+                }
+            }
+            state[i][j] = 0;
+        }
+    }
+
+    if(out === -now) {whatToMove[state] = undefined;}
+    verdict[state] = out;
+}
+
+solve();
+
 export {whatToMove};
